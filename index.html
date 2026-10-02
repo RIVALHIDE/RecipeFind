@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipes Finder App</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <div class="logo">Recipes<span>Finder App</span></div>
+
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search any dish worldwide… biryani, sushi, tacos, moussaka…" />
+            <button onclick="searchRecipes()"><i class="fas fa-search"></i> Search</button>
+        </div>
+        
+    </header>
+
+    <main>
+        <div class="sub-heading">
+            <h2>Recipes <span id="count-label"></span></h2>
+            <button id="back-btn" class="back-btn" onclick="goHome()" style="display:none;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </button>
+        </div>
+        <div id="recipes-grid"></div>
+    </main>
+
+    <div id="modal">
+        <div class="modal-box">
+            <div class="modal-img-wrap">
+                <img id="modal-img" src="" alt="" />
+                <h2 id="modal-title"></h2>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-info" id="modal-info"></div>
+            <div class="modal-ingredients">
+                <h4>Ingredients</h4>
+                <ul id="modal-ingredients"></ul>
+            </div>
+            <a id="modal-source" class="modal-source" href="#" target="_blank">
+                <i class="fas fa-external-link-alt"></i> View Full Recipe
+            </a>
+        </div>
+    </div>
+
+</body>
+<script src="app.js"></script>
+</html>
