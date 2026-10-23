@@ -10,32 +10,102 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
     <header>
-
         <div class="logo">Recipes<span>Finder App</span></div>
 
-        <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Search any dish worldwide… biryani, sushi, tacos, moussaka…" />
-            <button onclick="searchRecipes()"><i class="fas fa-search"></i> Search</button>
+        <!-- search bar with history dropdown -->
+        <div class="search-wrap">
+            <div class="search-bar">
+                <input type="text" id="search-input"
+                    placeholder="Search any dish worldwide… biryani, sushi, tacos…"
+                    autocomplete="off"
+                    onfocus="showHistoryDropdown()"
+                    onblur="hideHistoryDropdown()" />
+                <button id="mic-btn" class="mic-btn" onclick="startVoiceSearch()" title="Search by voice">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button onclick="searchRecipes()"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div id="history-dropdown" class="history-dropdown" style="display:none;"></div>
         </div>
-        
+
+        <div class="header-actions">
+            <button class="surprise-btn" onclick="surpriseMe()">
+                <i class="fas fa-shuffle"></i> Surprise Me
+            </button>
+        </div>
     </header>
 
+    <!-- ── Food Reels panel ───────────────────────────────────────── -->
+    <div id="reels-panel" class="reels-panel">
+        <div class="reels-panel-header">
+            <h3><i class="fas fa-film"></i> Food Reels</h3>
+            <button class="reels-close-btn" onclick="toggleReelsPanel()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="reels-add-bar">
+            <input type="text" id="reels-input" placeholder="Paste a YouTube Shorts or Instagram Reels link…" />
+            <button onclick="addReel()"><i class="fas fa-plus"></i> Add</button>
+        </div>
+        <p id="reels-error" class="reels-error" style="display:none;"></p>
+        <div id="reels-list"></div>
+    </div>
+    <div id="reels-overlay" class="reels-overlay" onclick="toggleReelsPanel()"></div>
+
+    <!-- ── Meal Planner panel ────────────────────────────────────── -->
+    <div id="planner-panel" class="side-panel">
+        <div class="side-panel-header">
+            <h3><i class="fas fa-calendar-week"></i> Meal Planner</h3>
+            <button class="side-panel-close" onclick="togglePlannerPanel()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="planner-body" class="planner-body"></div>
+    </div>
+    <div id="planner-overlay" class="reels-overlay" onclick="togglePlannerPanel()"></div>
+
+    <!-- ── Shopping List panel ───────────────────────────────────── -->
+    <div id="shop-panel" class="side-panel">
+        <div class="side-panel-header">
+            <h3><i class="fas fa-cart-shopping"></i> Shopping List</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="shop-action-btn" onclick="clearBoughtItems()" title="Remove bought items">
+                    <i class="fas fa-broom"></i>
+                </button>
+                <button class="side-panel-close" onclick="toggleShopPanel()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div id="shop-body" class="shop-body"></div>
+    </div>
+    <div id="shop-overlay" class="reels-overlay" onclick="toggleShopPanel()"></div>
+
+    <!-- ── Main content ───────────────────────────────────────────── -->
     <main>
         <div class="sub-heading">
             <h2>Recipes <span id="count-label"></span></h2>
-            <button id="back-btn" class="back-btn" onclick="goHome()" style="display:none;">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </button>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button class="reels-toggle-btn" onclick="toggleReelsPanel()">
+                    <i class="fas fa-film"></i> Food Reels
+                </button>
+                <button class="reels-toggle-btn planner-toggle-btn" onclick="togglePlannerPanel()">
+                    <i class="fas fa-calendar-week"></i> Meal Planner
+                </button>
+                <button class="reels-toggle-btn shop-toggle-btn" onclick="toggleShopPanel()">
+                    <i class="fas fa-cart-shopping"></i> Shopping List
+                </button>
+                <button class="reels-toggle-btn fav-toggle-btn" id="fav-filter-btn" onclick="toggleFavoritesFilter()">
+                    <i class="fas fa-heart"></i> Favorites
+                </button>
+                <button id="back-btn" class="back-btn" onclick="goHome()" style="display:none;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
         </div>
         <div id="recipes-grid"></div>
     </main>
 
+    <!-- ── Recipe detail modal ────────────────────────────────────── -->
     <div id="modal">
         <div class="modal-box">
             <div class="modal-img-wrap">
@@ -44,16 +114,74 @@
                 <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-info" id="modal-info"></div>
-            <div class="modal-ingredients">
-                <h4>Ingredients</h4>
-                <ul id="modal-ingredients"></ul>
+
+            <!-- modal tabs -->
+            <div class="modal-tabs">
+                <button class="modal-tab active" data-tab="ingredients" onclick="switchTab('ingredients', this)">
+                    <i class="fas fa-list"></i> Ingredients
+                </button>
+                <button class="modal-tab" data-tab="notes" onclick="switchTab('notes', this)">
+                    <i class="fas fa-star"></i> Notes & Rating
+                </button>
             </div>
+
+            <!-- ingredients tab -->
+            <div id="tab-ingredients" class="tab-pane active modal-ingredients">
+                <ul id="modal-ingredients"></ul>
+                <button class="copy-ingredients-btn" onclick="copyIngredients()">
+                    <i class="fas fa-copy"></i> Copy Ingredients
+                </button>
+            </div>
+
+            <!-- notes & rating tab -->
+            <div id="tab-notes" class="tab-pane" style="display:none;">
+                <div class="notes-panel">
+                    <div class="star-rating" id="star-rating">
+                        <span data-v="1" onclick="setRating(1)"><i class="fas fa-star"></i></span>
+                        <span data-v="2" onclick="setRating(2)"><i class="fas fa-star"></i></span>
+                        <span data-v="3" onclick="setRating(3)"><i class="fas fa-star"></i></span>
+                        <span data-v="4" onclick="setRating(4)"><i class="fas fa-star"></i></span>
+                        <span data-v="5" onclick="setRating(5)"><i class="fas fa-star"></i></span>
+                    </div>
+                    <textarea id="note-input" class="note-input" placeholder="Write your notes here…" rows="4"></textarea>
+                    <button class="save-note-btn" onclick="saveNote()">
+                        <i class="fas fa-floppy-disk"></i> Save Note
+                    </button>
+                    <p id="note-saved-msg" class="note-saved-msg" style="display:none;">
+                        <i class="fas fa-check-circle"></i> Saved!
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer-row">
+                <button id="fav-btn" class="fav-modal-btn" onclick="toggleFavoriteFromModal()">
+                    <i class="fas fa-heart"></i> <span id="fav-btn-label">Save to Favorites</span>
+                </button>
+                <button id="plan-add-btn" class="plan-modal-btn" onclick="openPlanPicker()">
+                    <i class="fas fa-calendar-plus"></i> Add to Planner
+                </button>
+                <button id="shop-add-btn" class="shop-modal-btn" onclick="addIngredientsToShopList()">
+                    <i class="fas fa-cart-plus"></i> Add to Shopping
+                </button>
+            </div>
+
             <a id="modal-source" class="modal-source" href="#" target="_blank">
                 <i class="fas fa-external-link-alt"></i> View Full Recipe
             </a>
         </div>
     </div>
 
+    <!-- ── Meal planner slot picker (mini modal) ──────────────────── -->
+    <div id="plan-picker" class="plan-picker-overlay" style="display:none;" onclick="closePlanPicker(event)">
+        <div class="plan-picker-box">
+            <h4><i class="fas fa-calendar-plus"></i> Add to Planner</h4>
+            <div class="plan-picker-grid" id="plan-picker-grid"></div>
+            <button class="plan-picker-cancel" onclick="closePlanPickerDirect()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/dexie@3/dist/dexie.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
 </body>
-<script src="app.js"></script>
 </html>
